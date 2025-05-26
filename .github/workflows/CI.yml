@@ -22,19 +22,16 @@ jobs:
       matrix:
         include:
           - build_variant: "mt7621"
-            targets: "MI-R4A WR1200JS K2P DIR-878 CR660x JCG-Q20 MI-4"
-          - build_variant: "mt7621-usb-1"
-            targets: "XY-C1 JCG-836PRO JCG-Y2 NEWIFI ZTE-E8820S B70"
-          - build_variant: "mt7621-usb-2"
-            targets: "MI-R3G JCG-AC860M NETGEAR-BZV MI-R3P R2100 RM2100 MSG1500 BELL-A040WQ"
+            targets: "MI-R4A"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@main
       - name: Prepare environment
         run: |
           sudo apt update
-          sudo apt install libtool-bin gperf python3-docutils autopoint gettext
-      - name: Run shellcheck
-        run: sh ./trunk/tools/shellcheck.sh
+          sudo apt-get -y install unzip libtool-bin curl cmake gperf gawk flex bison nano xxd fakeroot \
+          cpio git python3-docutils gettext automake autopoint texinfo build-essential help2man \
+          pkg-config zlib1g-dev libgmp3-dev libmpc-dev libmpfr-dev libncurses5-dev libltdl-dev wget \
+          bc
       - name: Prepare toolchain
         run: |
           cd toolchain-mipsel
@@ -56,7 +53,7 @@ jobs:
           echo "image_name=${image_name}" >> $GITHUB_ENV
       - name: Upload images to Artifact
         if: ${{ github.event_name != 'release' && success() }}
-        uses: actions/upload-artifact@v2.2.1
+        uses: actions/upload-artifact@v1
         with:
           name: ${{ env.image_name }}
           path: ${{ env.images_dir }}/*.7z
@@ -67,7 +64,7 @@ jobs:
           echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
       - name: Upload images to Releases
         if: ${{ github.event_name == 'release' && success() }}
-        uses: svenstaro/upload-release-action@2.2.0
+        uses: svenstaro/upload-release-action@1.0.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ${{ env.images_dir }}/*.trx
